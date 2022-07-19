@@ -1,0 +1,45 @@
+#! bin/bash
+# QC of raw reads
+set -e
+set -x
+#Change this to your directory.
+#The program creates the direcetory and changes into it
+#mkdir bpss1_analysis
+#cd bpss1_analysis
+
+# Use conda to install the folllwing bioiformatics_program
+
+#get conda from https://anaconda.org
+conda install -c bioconda fastp
+
+conda install -c bioconda fastqc
+
+conda install -c bioconda spades
+
+conda install -c bioconda viralverify
+
+#
+# link the data in from the other directory
+# Change the link to the sequence folder and note the
+#ln -fs /Users/emmannaemeka/Documents/Salmonella_phages_emmanuel/bpss1/*.fq.gz .
+
+
+# To run fastqc on the raw files for quality
+fastqc *fq.gz
+
+
+# To trim adapters using fastp
+for i in *_R1.fq.gz
+do
+fastp --in1 $i --in2 ${i/_R1.fq.gz/_R2.fq.gz} --out1 r1.fastp.fq.gz --out2 r2.fastp.fq.gz
+metaspades.py  --only-assembler  -1 r1.fastp.fq.gz -2 r2.fastp.fq.gz -o my_assembly
+done
+
+# To classify viral reads from the assembly
+
+cd my_assembly
+
+viralverify -f scaffolds.fasta -o verify_meta_virus_sample_1  --hmm  /Users/emmannaemeka/Documents/bioiformatics_program/Pfam-A.hmm
+# To annotate using prokka
+
+
